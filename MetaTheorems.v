@@ -231,49 +231,76 @@ Proof.
       inversion H2.
 Qed.   
 
+Theorem dist_l :
+    forall x y z yz xyxz , Times x yz xyxz -> Plus y z yz ->
+    exists xy xz, Times x y xy /\ Times x z xz /\ Plus xy xz xyxz.
+Proof.    
+    elim => [|x_ IHx] => y z yz xyxz HT HP.
+    + inversion HT; subst n xyxz.
+      exists Z, Z; autoP.
+    + inversion HT; subst n m o.
+      move : (IHx y z yz l H0 HP) => [xy_ [xz_ [Hxy_ [Hxz_ Hl]]]].
+      move : (Plus_close y xy_) => [xy Hxy].
+      move : (Plus_close z xz_) => [xz Hxz].
+      exists xy, xz; split; [|split].
+      - apply T_Succ with (l := xy_) => //.
+      - apply T_Succ with (l := xz_) => //.
+      - move : (Plus_assoc y z l yz xyxz HP H1) => [zl [Hzl Hyzl]].
+        apply Plus_comm in Hzl.
+        move  : (Plus_assoc xy_ xz_ z l zl Hl Hzl) => [xz' [Hxz' Hzl']].
+        apply Plus_comm in Hxz; apply Plus_comm in Hxy.
+        move : (Plus_uniq xz_ z xz xz' Hxz Hxz') => xzxz; subst xz'.
+        apply Plus_comm in Hzl'.
+        apply Plus_comm in Hyzl.
+        move : (Plus_assoc xz xy_ y zl xyxz Hzl' Hyzl) => [xy' [Hxy' Hyz']].
+        move : (Plus_uniq xy_ y xy xy' Hxy Hxy') => xyxy; subst xy'.
+        apply Plus_comm => //.
+Qed.        
+
+Theorem dist_r :
+    forall x y z xy xzyz, Times xy z xzyz -> Plus x y xy ->
+    exists xz yz, Times x z xz /\ Times y z yz /\ Plus xz yz xzyz.
+Proof.
+    move => x y z xy xzyz HT HP.
+    apply Times_comm in HT.
+    move : (dist_l z x y xy xzyz HT HP) => [xz [yz [Hxz [Hyz H]]]].
+    exists xz, yz; split; [|split] => //; apply Times_comm => //.
+Qed.
+
+
+
+    
+           
+
 Theorem Times_assoc :
     forall x y z xy xyz,
     Times x y xy -> Times xy z xyz  ->
     exists yz, Times y z yz /\ Times x yz xyz.
 Proof.
-   
-
-
-
-
-
-
-(* Theorem distr_l :
-forall x y z yz xyxz , Times x yz xyxz -> Plus y z yz ->
-exists xy xz, Times x y xy /\ Times x z xz /\ Plus xy xz xyxz.
-Proof.    
-elim => [|x_ IHx] => y z yz xyxz HT HP.
-+ inversion HT; subst n xyxz.
-exists Z, Z; autoP.
-+ inversion HT; subst n m o.
-move : (IHx y z yz l H0 HP) => [xy_ [xz_ [Hxy_ [Hxz_ Hl]]]].
-move : (Plus_close y xy_) => [xy Hxy].
-move : (Plus_close z xz_) => [xz Hxz].
-exists xy, xz; split; [|split].
-- apply T_Succ with (l := xy_) => //.
-- apply T_Succ with (l := xz_) => //.
-- suff Hl_ : Plus xy_ xz_ l.           *)
-
-
-
-
-    
-      
-        
-
-
-
-
-
-
-
-
-
-
-
-    
+    move => x y; move : x.
+    induction y => x z xy xyz H1 H2.
+    + apply Times_comm in H1.
+      inversion H1; subst n xy.
+      inversion H2; subst n xyz.
+      exists Z; split => //.
+      apply Times_zero_r.
+    + apply Times_comm in H1.
+      inversion H1; subst n m o.
+      move : (Times_close y z) => [yz_ Hyz_].
+      move : (Plus_close z yz_) => [yz Hyz].
+      exists yz; split.
+      - apply T_Succ with (l := yz_) => //.
+      - move : (dist_r x l z xy xyz H2 H3) => [xz [lz [Hzx [Hlz Hxyz]]]]. 
+        move : (Times_close x yz) => [xyz' H].
+        move :  (dist_l x z yz_ _ _ H Hyz) => [xz' [yz' [Hxz [Hxyz_ Hxyz']]]].
+        move : (Times_uniq x z _ _ Hzx Hxz) => xzxz; subst xz'.
+        apply Times_comm in H0.
+        move : (IHy x z l lz H0 Hlz) => [yz'' [Hyz'' Hlz']].
+        move : (Times_uniq y z _ _ Hyz_ Hyz'') => yzyz; subst yz''.
+        suff : xyz = xyz'.
+          move => -> //.
+        apply (Plus_uniq xz lz) => //.
+        suff  : lz = yz'.
+          move => -> //.
+        apply (Times_uniq x yz_) => //.
+Qed.
