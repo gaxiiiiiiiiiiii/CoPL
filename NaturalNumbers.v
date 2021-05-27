@@ -1,3 +1,6 @@
+Require Import Init.Wf.
+Require Export ssreflect.
+
 Inductive peano : Set :=
     | Z : peano
     | S : peano -> peano.
@@ -15,15 +18,23 @@ Inductive Times : peano -> peano -> peano -> Prop :=
                Times n m l -> Plus m l o -> Times (S n) m o.
 
                 
-Inductive LessThan : peano -> peano -> Prop :=
-    | L_Succ : forall n, LessThan n (S n)                
-    | L_Trans : forall n m l,
-                LessThan n m -> LessThan m l -> LessThan n l
-    | L_Zero : forall n, LessThan Z (S n)
-    | L_SuccSucc : forall n m ,
-                   LessThan n m -> LessThan (S n) (S m)
-    | L_SuccR : forall n m,
-                LessThan n m -> LessThan n (S m).
+
+Inductive LessThan1 : peano -> peano -> Prop :=
+    | L1_Succ  : forall n : peano, LessThan1 n (S n)
+    | L1_Trans : forall n1 n2 n3 : peano, 
+                 LessThan1 n1 n2 -> LessThan1 n2 n3 -> LessThan1 n1 n3.
+
+
+Inductive LessThan2 : peano -> peano -> Prop :=
+    | L2_Zero     : forall n : peano, LessThan2 Z (S n)
+    | L2_SuccSucc : forall n1 n2 : peano,
+                    LessThan2 n1 n2 -> LessThan2 (S n1) (S n2).
+
+
+Inductive LessThan3 : peano -> peano -> Prop :=
+    | L3_Succ  : forall n : peano, LessThan3 n (S n)
+    | L3_SuccR : forall n1 n2 : peano, LessThan3 n1 n2 -> LessThan3 n1 (S n2).
+
 
 Inductive Exp : Set :=
     | ENum : peano -> Exp
@@ -81,11 +92,58 @@ Inductive DetReduceTo : Exp -> Exp -> Prop :=
                 DetReduceTo e2 e2' ->
                 DetReduceTo (ETimes (ENum n1) e2) (ETimes (ENum n1) e2').     
                 
-Hint Constructors  Plus Times LessThan Exp EvalTo ReduceTo MultiReduceTo DetReduceTo : Peano.  
+Hint Constructors  Plus Times LessThan1 Exp EvalTo ReduceTo MultiReduceTo DetReduceTo : Peano.  
 
 Export Peano.
 
+
 Ltac autoP := auto with Peano.
+
+Theorem LT_wf : well_founded lt.
+Proof.
+    move => x.
+    induction x.
+    +   apply Acc_intro.
+        move => y F.
+        inversion F. 
+    +   inversion IHx.
+        apply Acc_intro.        
+        move => y Hy.
+        inversion Hy.
+        - apply IHx.
+        - apply H => //.            
+Qed.
+
+
+
+Definition LT1 (ab_ : peano * peano) (cd_ : peano * peano) :=
+    let a := fst ab_ in
+    let b := snd ab_ in
+    let c := fst cd_ in
+    let d := snd cd_ in
+    forall (ab : LessThan1 a b) (cd : LessThan1 c d),
+    (exists (bd : LessThan1 b d) (cb : LessThan1 c b),
+    a = c /\ cd = L1_Trans c b d cb bd) \/
+    (exists (ca : LessThan1 c a) (ad : LessThan1 a d),
+     b = d /\ cd = L1_Trans c a d ca ad).           
+
+
+
+
+
+
+
+      
+            
+
+    
+
+
+
+
+
+
+    
 
 
 

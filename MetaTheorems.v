@@ -231,7 +231,7 @@ Proof.
       inversion H2.
 Qed.   
 
-Theorem dist_l :
+Lemma dist_l :
     forall x y z yz xyxz , Times x yz xyxz -> Plus y z yz ->
     exists xy xz, Times x y xy /\ Times x z xz /\ Plus xy xz xyxz.
 Proof.    
@@ -257,7 +257,7 @@ Proof.
         apply Plus_comm => //.
 Qed.        
 
-Theorem dist_r :
+Lemma dist_r :
     forall x y z xy xzyz, Times xy z xzyz -> Plus x y xy ->
     exists xz yz, Times x z xz /\ Times y z yz /\ Plus xz yz xzyz.
 Proof.
@@ -304,3 +304,581 @@ Proof.
           move => -> //.
         apply (Times_uniq x yz_) => //.
 Qed.
+
+
+
+(* Theorem 2.11 (CompareNat1) *)
+Theorem LessThan1_Z_Sn :
+    forall n : peano, LessThan1 Z (S n).
+Proof.
+    induction n as [| n' H'].
+    
+        (* Case : n = Z *)
+        apply L1_Succ.
+    
+        (* Case : n = S n' *)
+        apply (L1_Trans _ (S n') _ H').
+        apply L1_Succ.
+Qed.
+
+(* Theorem 2.11 (CompareNat2) *)
+Theorem LessThan2_Z_Sn :
+    forall n : peano, LessThan2 Z (S n).
+Proof.
+    apply L2_Zero.
+Qed.
+
+(* Theorem 2.11 (CompareNat3) *)
+Theorem LessThan3_Z_Sn :
+    forall n : peano, LessThan3 Z (S n).
+Proof.
+    induction n as [| n' H].
+    
+        (* Case : n = Z *)
+        apply L3_Succ.
+    
+        (* Case : n = S n' *)
+        apply (L3_SuccR _ _ H).
+Qed.
+
+(* Theorem 2.12 (CompareNat1) *)
+Theorem LessThan1_prev :
+    forall n1 n2 : peano, LessThan1 (S n1) (S n2) -> LessThan1 n1 n2.
+Proof.
+Admitted.
+
+(* Theorem 2.12 (CompareNat2) *)
+Theorem LessThan2_prev :
+    forall n1 n2 : peano, LessThan2 (S n1) (S n2) -> LessThan2 n1 n2.
+Proof.
+Admitted.
+
+(* Theorem 2.12 (CompareNat3) *)
+Theorem LessThan3_prev :
+    forall n1 n2 : peano, LessThan3 (S n1) (S n2) -> LessThan3 n1 n2.
+Proof.
+Admitted.
+
+(* Theorem 2.13 (CompareNat1) *)
+Theorem LessThan1_trans :
+    forall n1 n2 n3 : peano,
+    LessThan1 n1 n2 -> LessThan1 n2 n3 -> LessThan1 n1 n3.
+Proof.
+    apply L1_Trans.
+Qed.
+
+(* Theorem 2.13 (CompareNat2) *)
+Theorem LessThan2_trans :
+    forall n1 n2 n3 : peano,
+    LessThan2 n1 n2 -> LessThan2 n2 n3 -> LessThan2 n1 n3.
+Proof.
+Admitted.
+
+(* Theorem 2.13 (CompareNat3) *)
+Theorem LessThan3_trans :
+    forall n1 n2 n3 : peano,
+    LessThan3 n1 n2 -> LessThan3 n2 n3 -> LessThan3 n1 n3.
+Proof.
+Admitted.
+
+(* Theorem 2.14 (1) (2) *)
+Theorem LessThan_equiv_1_2 :
+    forall n1 n2 : peano, LessThan1 n1 n2 <-> LessThan2 n1 n2.
+Proof.
+Admitted.
+
+(* Theorem 2.14 (2) (3) *)
+Theorem LessThan_equiv_2_3 :
+    forall n1 n2 : peano, LessThan2 n1 n2 <-> LessThan3 n1 n2.
+Proof.
+Admitted.
+
+(* Theorem 2.14 (1) (3) *)
+Theorem LessThan_equiv_1_3 :
+    forall n1 n2 : peano, LessThan1 n1 n2 <-> LessThan3 n1 n2.
+Proof.
+Admitted.
+
+Theorem EvalTo_total :
+    forall e, exists n, EvalTo e n.
+Proof.
+    move => e.
+    (* inversion e as [n| x y | x y]. *)
+    induction e as [n | x [x_ Hx] y [y_ Hy]| x [x_ Hx] y [y_ Hy]].
+    +   exists n.
+        apply E_Const.
+    +   move : (Plus_close x_ y_) => [xy Hxy].
+        exists xy.
+        apply (E_Plus x y x_ y_ xy) => //.
+    +   move : (Times_close x_ y_) => [xy Hxy].
+        exists xy.
+        apply (E_Times x y x_ y_ xy) => //.
+Qed.  
+
+Theorem EvalTo_uniq :
+    forall e x y, EvalTo e x -> EvalTo e y -> x = y.
+Proof.
+    elim => [|e_ He_|e_ He_].
+    +   move => p x y H1 H2.
+        inversion H1; inversion H2.
+        subst n n0 p => //.
+    +   move => e He x y H1 H2.
+        inversion H1; inversion H2.
+        subst e1 e2 n e0 e3 n4.
+        suff H : n1 = n0 /\ n2 = n3.
+        -   inversion H.
+            subst n0 n3.
+            apply (Plus_uniq n1 n2) => //.
+        -   split.
+            *   apply He_ => //.
+            *   apply He => //.
+    +   move => e He x y H1 H2.
+        inversion H1; inversion H2.
+        subst e1 e2 n e0 e3 n4.
+        suff H : n1 = n0 /\ n2 = n3.
+        -   inversion H.
+            subst n0 n3.
+            apply (Times_uniq n1 n2) => //.
+        -   split.
+            *   apply He_ => //.
+            *   apply He => //.
+Qed.      
+
+Theorem EPlus_comm : 
+    forall X Y xy, EvalTo (EPlus X Y) xy -> EvalTo (EPlus Y X) xy.
+Proof.
+    move => X Y xy H.
+    inversion H.
+    apply (E_Plus Y X n2 n1) => //.
+    apply Plus_comm => //.
+Qed.
+
+Theorem EPlus_assoc :
+    forall X Y Z xyz,
+    EvalTo (EPlus (EPlus X Y) Z) xyz -> EvalTo (EPlus X (EPlus Y Z)) xyz.
+Proof.
+    move => X Y Z xyz H.
+    inversion H.
+    inversion H2.
+    subst e1 e2 n e0 e3 n4.
+    move : (Plus_close n3 n2) => [yz Hyz].
+    apply (E_Plus _ _ n0 yz) => //.
+    +   apply (E_Plus Y Z n3 n2) => //.
+    +   move :  (Plus_assoc n0 n3 n2 n1 xyz H11 H5) => [yz_ [Hyz_ Hxyz]].
+        suff : yz = yz_.
+        -   move => -> //.
+        -   apply (Plus_uniq n3 n2) => //.
+Qed.
+
+Theorem ETimes_comm :
+    forall X Y n, EvalTo (ETimes X Y) n -> EvalTo (ETimes Y X) n.
+Proof.
+    move => X Y n H.
+    inversion H.
+    apply (E_Times Y X n2 n1) => //.
+    apply Times_comm => //. 
+Qed.
+
+
+Theorem ETimes_assoc :
+    forall X Y Z xyz,
+    EvalTo (ETimes (ETimes X Y) Z) xyz -> EvalTo (ETimes X (ETimes Y Z)) xyz.
+Proof.
+    move => X Y Z xyz H.
+    inversion H.
+    inversion H2.
+    subst e1 e2 n e0 e3 n4.
+    move : (Times_close n3 n2) => [yz Hyz].
+    apply (E_Times _ _ n0 yz) => //.
+    +   apply (E_Times Y Z n3 n2) => //.
+    +   move :  (Times_assoc n0 n3 n2 n1 xyz H11 H5) => [yz_ [Hyz_ Hxyz]].
+        suff : yz = yz_.
+        -   move => -> //.
+        -   apply (Times_uniq n3 n2) => //.
+Qed.
+
+Theorem ReduceTo_progress :
+    forall e, (exists n, e = ENum n) \/ (exists e', ReduceTo e e').
+Proof.
+    move => e.
+    induction e.
+    +   left; exists p => //.
+    +   move : IHe1 => [[x Hx]|[X HX]]; move : IHe2 => [[y Hy] | [Y HY]].
+        -   subst e1 e2.
+            move : (Plus_close x y) => [xy Hxy].
+            right; exists (ENum xy).
+            apply (R_Plus x y xy) => //.
+        -   subst e1.
+            right.
+            exists (EPlus (ENum x) Y).
+            apply R_PlusR => //.
+        -   subst e2; right.
+            exists (EPlus X (ENum y)).
+            apply R_PlusL => //.
+        -   right.
+            exists (EPlus e1 Y).
+            apply R_PlusR => //.
+    +   move : IHe1 => [[x Hx]|[X HX]]; move : IHe2 => [[y Hy] | [Y HY]].
+        -   subst e1 e2.
+            move : (Times_close x y) => [xy Hxy].
+            right; exists (ENum xy).
+            apply (R_Times x y xy) => //.
+        -   subst e1.
+            right.
+            exists (ETimes (ENum x) Y).
+            apply R_TimesR => //.
+        -   subst e2; right.
+            exists (ETimes X (ENum y)).
+            apply R_TimesL => //.
+        -   right.
+            exists (ETimes e1 Y).
+            apply R_TimesR => //.
+Qed.
+
+
+
+
+
+
+
+Theorem DetReduceTo_uniq :
+    forall X Y1 Y2, DetReduceTo X Y1 -> DetReduceTo X Y2 -> Y1 = Y2.
+Proof.
+    move => X; induction X => Y1 Y2 H1 H2.        
+    +   inversion H1.
+    +   inversion H1; subst X1 X2 Y1; inversion H2.
+        *   subst n0 m0 Y2.
+            move : (Plus_uniq n m l l0 H4 H5) -> => //.
+        *   subst e1 e2 Y2.
+            inversion H5.
+        *   subst n1 e2 Y2.
+            inversion H5.
+        *   subst e1 e2 Y2.
+            inversion H4.
+        *   subst e0 e3 Y2.
+            suff : e1' = e1'0.
+            -   move => -> //.
+            -   apply IHX1 => //.
+        *   subst e1 e2 Y2.
+            inversion H4.
+        *   subst n1 e2 Y2.
+            inversion H4.
+        *   subst e1 e0 Y2.
+            inversion H5.
+        *   subst n0 e0 Y2.
+            move : (IHX2 e2' e2'0 H4 H5) -> => //.
+    +   inversion H1; subst X1 X2 Y1; inversion H2.
+        *   subst n0 m0 Y2.
+            move : (Times_uniq n m l l0 H4 H5) -> => //.
+        *   subst e1 e2 Y2.
+            inversion H5.
+        *   subst n1 e2 Y2.
+            inversion H5.
+        *   subst e1 e2 Y2.
+            inversion H4.
+        *   subst e0 e3 Y2.
+            suff : e1' = e1'0.
+            -   move => -> //.
+            -   apply IHX1 => //.
+        *   subst e1 e2 Y2.
+            inversion H4.
+        *   subst n1 e2 Y2.
+            inversion H4.
+        *   subst e1 e0 Y2.
+            inversion H5.
+        *   subst n0 e0 Y2.
+            move : (IHX2 e2' e2'0 H4 H5) -> => //.
+Qed.   
+
+
+    
+Theorem DetReduceTo_ReduceTo :
+    forall X Y, DetReduceTo X Y -> ReduceTo X Y.
+Proof.
+    elim.
+    +   move => x Y H.
+        inversion H.
+    +   move => a IHa b IHb Y H.
+        inversion H.
+        *   subst a b Y.
+            apply R_Plus => //.
+        *   subst e1 e2 Y.
+            apply R_PlusL.
+            apply IHa => //.
+        *   subst a b Y.
+            apply R_PlusR.
+            apply IHb => //.
+    +   move => a IHa b IHb Y H.
+        inversion H.
+        *   subst a b Y.
+            apply R_Times => //.
+        *   subst e1 e2 Y.
+            apply R_TimesL.
+            apply IHa => //.
+        *   subst a b Y.
+            apply R_TimesR.
+            apply IHb => //.
+Qed.  
+
+Lemma MR_PlusR :
+    forall X Y Y', MultiReduceTo Y Y' -> 
+    MultiReduceTo (EPlus X Y) (EPlus X Y').
+Proof.
+    move => X Y Y' H.
+    elim H.
+    +   move => e.
+        apply MR_Zero.
+    +   move => e e' He.
+        apply MR_One.
+        apply R_PlusR => //.
+    +   move => x y z Hxy IHxy Hyz IHyz.
+        apply (MR_Multi _ _ _ IHxy IHyz).
+Qed.  
+
+Lemma MR_PlusL :
+    forall X X' Y, MultiReduceTo X X' ->
+    MultiReduceTo (EPlus X Y) (EPlus X' Y).
+Proof.
+    move => X Y Y' H.
+    elim H.
+    +   move => e.
+        apply MR_Zero.
+    +   move => e e' He.
+        apply MR_One.
+        apply R_PlusL => //.
+    +   move => x y z Hxy IHxy Hyz IHyz.
+        apply (MR_Multi _ _ _ IHxy IHyz).
+Qed.  
+
+Lemma MR_TimesR :
+    forall X Y Y', MultiReduceTo Y Y' -> 
+    MultiReduceTo (ETimes X Y) (ETimes X Y').
+Proof.
+    move => X Y Y' H.
+    elim H.
+    +   move => e.
+        apply MR_Zero.
+    +   move => e e' He.
+        apply MR_One.
+        apply R_TimesR => //.
+    +   move => x y z Hxy IHxy Hyz IHyz.
+        apply (MR_Multi _ _ _ IHxy IHyz).
+Qed.  
+
+Lemma MR_TimesL :
+    forall X X' Y, MultiReduceTo X X' ->
+    MultiReduceTo (ETimes X Y) (ETimes X' Y).
+Proof.
+    move => X Y Y' H.
+    elim H.
+    +   move => e.
+        apply MR_Zero.
+    +   move => e e' He.
+        apply MR_One.
+        apply R_TimesL => //.
+    +   move => x y z Hxy IHxy Hyz IHyz.
+        apply (MR_Multi _ _ _ IHxy IHyz).
+Qed.  
+
+
+
+Theorem ReduceTo_weak_normal :
+    forall e, exists n, MultiReduceTo e (ENum n).
+Proof.
+    elim.
+    +   move => x; exists x.
+        apply MR_Zero.
+    +   move => X [x Hx] Y [y Hy].
+        move : (Plus_close x y) => [xy Hxy].        
+        exists xy.
+        refine (MR_Multi _ (EPlus X (ENum y)) _ _ _).
+        -   apply MR_PlusR => //.
+        -   refine (MR_Multi _ (EPlus (ENum x) (ENum y)) _ _ _ ).
+            *   apply MR_PlusL => //.
+            *   apply MR_One.
+                apply R_Plus => //.
+    +   move => X [x Hx] Y [y Hy].
+        move : (Times_close x y) => [xy Hxy].        
+        exists xy.
+        refine (MR_Multi _ (ETimes X (ENum y)) _ _ _).
+        -   apply MR_TimesR => //.
+        -   refine (MR_Multi _ (ETimes (ENum x) (ENum y)) _ _ _ ).
+            *   apply MR_TimesL => //.
+            *   apply MR_One.
+                apply R_Times => //.
+Qed.  
+
+Theorem ReduceTo_confl :
+   forall X Y1 Y2, ReduceTo X Y1 -> ReduceTo X Y2 ->
+    exists Z, MultiReduceTo Y1 Z /\ MultiReduceTo Y2 Z.
+Proof.
+    elim.
+    +   move => x Y1 Y2 H1.
+        inversion H1.
+    +   move => A HA B HB Y1 Y2 H1 H2.
+        inversion H1; inversion H2.
+        -   subst A B Y1 Y2.
+            inversion H5; inversion H7.
+            subst n0 m0.
+            move : (Plus_uniq n m l l0 H4 H8) ->.
+            exists (ENum l0); split; apply MR_Zero.
+        -   subst A B Y1 Y2 e1 e2.
+            inversion H8.
+        -   subst A B e1 e2 Y1 Y2.
+            inversion H8.
+        -   subst A B e1 e2 Y1 Y2.
+            inversion H4.
+        -   subst A B e0 e3 Y1 Y2.
+            move : (HA e1' e1'0 H4 H8) => [Z [HZ1 HZ2]].
+            exists (EPlus Z e2); split; apply MR_PlusL => //.
+        -   subst A B e0 e3 Y1 Y2.
+            exists (EPlus e1' e2'); split.
+            *   apply MR_PlusR; apply MR_One => //.
+            *   apply MR_PlusL; apply MR_One => //.
+        -   subst A B e1 e2 Y1 Y2.
+            inversion H4.
+        -   subst A B e0 e3 Y1 Y2. 
+            exists (EPlus e1' e2'); split.
+            *   apply MR_PlusL; apply MR_One => //.
+            *   apply MR_PlusR; apply MR_One => //.
+        -   subst A B e0 e3 Y1 Y2.
+            move : (HB e2' e2'0 H4 H8) => [z [Hz1 Hz2]].
+            exists (EPlus e1 z); split; apply MR_PlusR => //.
+    +   move => A HA B HB Y1 Y2 H1 H2.
+        inversion H1; inversion H2.
+        -   subst A B Y1 Y2.
+            inversion H5; inversion H7.
+            subst n0 m0.
+            move : (Times_uniq n m l l0 H4 H8) ->.
+            exists (ENum l0); split; apply MR_Zero.
+        -   subst A B Y1 Y2 e1 e2.
+            inversion H8.
+        -   subst A B e1 e2 Y1 Y2.
+            inversion H8.
+        -   subst A B e1 e2 Y1 Y2.
+            inversion H4.
+        -   subst A B e0 e3 Y1 Y2.
+            move : (HA e1' e1'0 H4 H8) => [Z [HZ1 HZ2]].
+            exists (ETimes Z e2); split; apply MR_TimesL => //.
+        -   subst A B e0 e3 Y1 Y2.
+            exists (ETimes e1' e2'); split.
+            *   apply MR_TimesR; apply MR_One => //.
+            *   apply MR_TimesL; apply MR_One => //.
+        -   subst A B e1 e2 Y1 Y2.
+            inversion H4.
+        -   subst A B e0 e3 Y1 Y2. 
+            exists (ETimes e1' e2'); split.
+            *   apply MR_TimesL; apply MR_One => //.
+            *   apply MR_TimesR; apply MR_One => //.
+        -   subst A B e0 e3 Y1 Y2.
+            move : (HB e2' e2'0 H4 H8) => [z [Hz1 Hz2]].
+            exists (ETimes e1 z); split; apply MR_TimesR => //.
+Qed.            
+                    
+
+
+
+Theorem EvalTo_MultiReduceTo :
+    forall e n, EvalTo e n -> MultiReduceTo e (ENum n).
+Proof.
+    elim.
+    +   move => m n H.
+        inversion H.
+        subst n0 m.
+        apply MR_Zero.        
+    +   move => x Hx y Hy n H.
+        inversion H.
+        subst e1 e2 n0.
+        move : (Hx n1 H2) => H1 {H2 Hx}.
+        move : (Hy n2 H3) => H2 {H3 Hy}.
+        refine (MR_Multi _ (EPlus x (ENum n2))_ _ _).
+        *   apply MR_PlusR => //.
+        *   refine (MR_Multi _ (EPlus (ENum n1) (ENum n2))_ _ _).
+            -   apply MR_PlusL => //.
+            -   apply MR_One.
+                apply R_Plus => //.
+    +   move => x Hx y Hy n H.
+        inversion H.
+        subst e1 e2 n0.
+        move : (Hx n1 H2) => H1 {H2 Hx}.
+        move : (Hy n2 H3) => H2 {H3 Hy}.
+        refine (MR_Multi _ (ETimes x (ENum n2))_ _ _).
+        *   apply MR_TimesR => //.
+        *   refine (MR_Multi _ (ETimes (ENum n1) (ENum n2))_ _ _).
+            -   apply MR_TimesL => //.
+            -   apply MR_One.
+                apply R_Times => //.
+Qed.
+
+
+
+
+Lemma MR_eq :
+    forall x y, MultiReduceTo (ENum x) (ENum y) -> x = y.
+Proof.
+    move => x y H.
+    inversion H => //.
+    +   inversion H0.
+    +   subst e e''.
+        (* move : (ReduceTo_weak_normal e') => [z Hz]. *)
+        inversion H0; inversion H1.
+        -   subst e e' e0.
+            inversion H5 => //.
+        -   subst e e' e0 e'0.
+            inversion H4.
+        -   subst e e' e0 e''.
+Admitted.            
+
+
+
+
+
+Theorem MultiReduceTo_EvalTo :
+    forall e n, MultiReduceTo e (ENum n) -> EvalTo e n.
+Proof.
+Admitted.
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+    
+
+
+
+
+
+    
+
+
+
+      
+    
+
+    
+
+
+
+           
+
+        
+       
+          
+
+    
+        
+
+       
+         
+
+
+
