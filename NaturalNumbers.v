@@ -1,4 +1,3 @@
-Require Import Init.Wf.
 Require Export ssreflect.
 
 Inductive peano : Set :=
@@ -98,36 +97,6 @@ Export Peano.
 
 
 Ltac autoP := auto with Peano.
-
-Theorem LT_wf : well_founded lt.
-Proof.
-    move => x.
-    induction x.
-    +   apply Acc_intro.
-        move => y F.
-        inversion F. 
-    +   inversion IHx.
-        apply Acc_intro.        
-        move => y Hy.
-        inversion Hy.
-        - apply IHx.
-        - apply H => //.            
-Qed.
-
-
-
-Definition LT1 (ab_ : peano * peano) (cd_ : peano * peano) :=
-    let a := fst ab_ in
-    let b := snd ab_ in
-    let c := fst cd_ in
-    let d := snd cd_ in
-    forall (ab : LessThan1 a b) (cd : LessThan1 c d),
-    (exists (bd : LessThan1 b d) (cb : LessThan1 c b),
-    a = c /\ cd = L1_Trans c b d cb bd) \/
-    (exists (ca : LessThan1 c a) (ad : LessThan1 a d),
-     b = d /\ cd = L1_Trans c a d ca ad).           
-
-
 
 
 
